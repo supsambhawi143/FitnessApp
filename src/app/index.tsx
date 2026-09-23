@@ -1,5 +1,8 @@
+import { supabase } from "@/lib/supabase"; // Adjust path if your lib folder is elsewhere
+import { router } from "expo-router";
 import { useState } from "react";
 import {
+  Alert,
   ImageBackground,
   StyleSheet,
   Text,
@@ -9,8 +12,9 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-export default function HomeScreen() {
-  const [isLogin, setIsLogin] = useState(false);
+export default function AuthScreen() {
+  const [isLogin, setIsLogin] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -21,11 +25,63 @@ export default function HomeScreen() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    if (!formData.email || !formData.password) {
+      Alert.alert("Missing Fields", "Please fill in all required fields.");
+      return;
+    }
+
+    setLoading(true);
+
     if (isLogin) {
-      console.log("Logging in with:", formData.email, formData.password);
+      // --- LOG IN FLOW ---
+      const { error } = await supabase.auth.signInWithPassword({
+        email: formData.email,
+        password: formData.password,
+      });
+
+      setLoading(false);
+
+      if (error) {
+        Alert.alert("Login Failed", error.message);
+      } else {
+        router.replace("/home"); // Redirects to Home Screen on successful login
+      }
     } else {
-      console.log("Signing up with:", formData);
+      // --- SIGN UP FLOW ---
+      if (!formData.fullName) {
+        setLoading(false);
+        Alert.alert("Missing Field", "Please enter your full name.");
+        return;
+      }
+
+      const { error } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            full_name: formData.fullName,
+          },
+        },
+      });
+
+      setLoading(false);
+
+      if (error) {
+        Alert.alert("Sign Up Failed", error.message);
+      } else {
+        Alert.alert(
+          "Account Created",
+          "Your account has been created successfully. Please log in to continue.",
+          [
+            {
+              text: "OK",
+              onPress: () => setIsLogin(true), // Switches view to Login screen
+            },
+          ],
+          { cancelable: false },
+        );
+      }
     }
   };
 
@@ -40,7 +96,7 @@ export default function HomeScreen() {
           <Text style={styles.title}>{isLogin ? "LOG IN" : "SIGN UP"}</Text>
           <Text style={styles.subtitle}>
             {isLogin
-              ? "Log in to continue tracking your fitnesss goals."
+              ? "Log in to continue tracking your fitness goals."
               : "Create your account to start tracking progress."}
           </Text>
 
@@ -82,9 +138,17 @@ export default function HomeScreen() {
             />
           </View>
 
-          <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+          <TouchableOpacity
+            style={[styles.button, loading && styles.buttonDisabled]}
+            onPress={handleSubmit}
+            disabled={loading}
+          >
             <Text style={styles.buttonText}>
-              {isLogin ? "Log In" : "Create Account"}
+              {loading
+                ? "PLEASE WAIT..."
+                : isLogin
+                  ? "Log In"
+                  : "Create Account"}
             </Text>
           </TouchableOpacity>
 
@@ -173,6 +237,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginTop: 10,
+  },
+  buttonDisabled: {
+    opacity: 0.6,
   },
   buttonText: {
     color: "#ffffff",
