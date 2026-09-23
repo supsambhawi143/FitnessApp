@@ -11,10 +11,23 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+// Fallback list in case MUSCLE_GROUPS is not exported properly from exercises.ts
+const DEFAULT_MUSCLE_GROUPS = [
+  { id: "chest", label: "Chest" },
+  { id: "back", label: "Back" },
+  { id: "legs", label: "Legs" },
+  { id: "shoulders", label: "Shoulders" },
+  { id: "arms", label: "Arms" },
+  { id: "abs", label: "Abs" },
+];
+
 export default function HomeScreen() {
   const [userName, setUserName] = useState("User");
   const [userInitials, setUserInitials] = useState("U");
   const [selectedMuscles, setSelectedMuscles] = useState<string[]>(["chest"]);
+
+  // Safely fallback to DEFAULT_MUSCLE_GROUPS if import is undefined
+  const muscleGroups = MUSCLE_GROUPS || DEFAULT_MUSCLE_GROUPS;
 
   useEffect(() => {
     fetchUserData();
@@ -99,7 +112,7 @@ export default function HomeScreen() {
             Tap one or combine muscles (e.g. Chest + Triceps):
           </Text>
           <View style={styles.chipGrid}>
-            {MUSCLE_GROUPS.map((group) => {
+            {(muscleGroups || []).map((group) => {
               const isSelected = selectedMuscles.includes(group.id);
               return (
                 <TouchableOpacity

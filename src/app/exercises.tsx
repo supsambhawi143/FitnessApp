@@ -6,11 +6,25 @@ export interface Exercise {
   sets: number;
   reps: string;
   mediaType: "video" | "gif" | "image";
-  mediaSource: any; // local require() or remote URI string
+  mediaSource: { uri: string } | number; // Remote object or local require()
   tip: string;
   setupSteps: string[];
   mistakes: string[];
 }
+
+export interface MuscleGroup {
+  id: string;
+  label: string;
+}
+
+export const MUSCLE_GROUPS: MuscleGroup[] = [
+  { id: "chest", label: "Chest" },
+  { id: "back", label: "Back" },
+  { id: "legs", label: "Legs" },
+  { id: "shoulders", label: "Shoulders" },
+  { id: "arms", label: "Arms" },
+  { id: "abs", label: "Abs" },
+];
 
 export const EXERCISE_DATABASE: Record<string, Exercise[]> = {
   chest: [
@@ -21,8 +35,10 @@ export const EXERCISE_DATABASE: Record<string, Exercise[]> = {
       target: "Mid Chest & Power",
       sets: 3,
       reps: "8-10",
-      mediaType: "video", // change to 'gif' if using gif
-      mediaSource: require("@/assets/videos/barbell_bench_press.mp4"), // OR { uri: "https://..." }
+      mediaType: "gif",
+      mediaSource: {
+        uri: "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Bench_Press/0.gif",
+      },
       tip: "Keep feet flat on floor and arch lower back slightly.",
       setupSteps: [
         "Lie flat on the bench, eyes directly under the bar.",
@@ -39,8 +55,10 @@ export const EXERCISE_DATABASE: Record<string, Exercise[]> = {
       target: "Mid Chest & Balance",
       sets: 3,
       reps: "10-12",
-      mediaType: "video",
-      mediaSource: require("@/assets/videos/db_bench_press.mp4"),
+      mediaType: "gif",
+      mediaSource: {
+        uri: "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Bench_Press/0.gif",
+      },
       tip: "Tuck elbows to 45 degrees relative to torso.",
       setupSteps: [
         "Sit on bench with dumbbells resting on thighs.",
@@ -60,12 +78,14 @@ export const EXERCISE_DATABASE: Record<string, Exercise[]> = {
       target: "Upper Chest",
       sets: 3,
       reps: "8-10",
-      mediaType: "video",
-      mediaSource: require("@/assets/videos/incline_barbell.mp4"),
+      mediaType: "gif",
+      mediaSource: {
+        uri: "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Incline_Bench_Press/0.gif",
+      },
       tip: "Set bench incline between 30 and 45 degrees.",
       setupSteps: [
         "Set bench to 30-45 degree angle.",
-        "Lower bar controlly to upper collarbone area.",
+        "Lower bar controlled to upper collarbone area.",
         "Press back up over eyes.",
       ],
       mistakes: [
@@ -79,8 +99,10 @@ export const EXERCISE_DATABASE: Record<string, Exercise[]> = {
       target: "Upper Chest Focus",
       sets: 3,
       reps: "10-12",
-      mediaType: "video",
-      mediaSource: require("@/assets/videos/incline_db.mp4"),
+      mediaType: "gif",
+      mediaSource: {
+        uri: "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Incline_Bench_Press/0.gif",
+      },
       tip: "Keep chest proud throughout movement.",
       setupSteps: [
         "Lie back on incline bench.",
@@ -96,8 +118,10 @@ export const EXERCISE_DATABASE: Record<string, Exercise[]> = {
       target: "Lower Chest",
       sets: 3,
       reps: "10-12",
-      mediaType: "video",
-      mediaSource: require("@/assets/videos/decline_press.mp4"),
+      mediaType: "gif",
+      mediaSource: {
+        uri: "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Decline_Bench_Press/0.gif",
+      },
       tip: "Secure legs under pad before lifting weight.",
       setupSteps: [
         "Hook legs securely in decline bench.",
@@ -113,8 +137,10 @@ export const EXERCISE_DATABASE: Record<string, Exercise[]> = {
       target: "Overall Chest (Guided)",
       sets: 3,
       reps: "10-12",
-      mediaType: "video",
-      mediaSource: require("@/assets/videos/chest_machine.mp4"),
+      mediaType: "gif",
+      mediaSource: {
+        uri: "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Leverage_Chest_Press/0.gif",
+      },
       tip: "Adjust seat so handles align with middle chest.",
       setupSteps: [
         "Adjust seat height.",
@@ -130,8 +156,10 @@ export const EXERCISE_DATABASE: Record<string, Exercise[]> = {
       target: "Inner & Outer Chest Isolation",
       sets: 3,
       reps: "12-15",
-      mediaType: "video",
-      mediaSource: require("@/assets/videos/machine_fly.mp4"),
+      mediaType: "gif",
+      mediaSource: {
+        uri: "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Butterfly/0.gif",
+      },
       tip: "Squeeze handles together and hold for 1 second.",
       setupSteps: [
         "Sit back into pad with arms extended out.",
@@ -147,8 +175,10 @@ export const EXERCISE_DATABASE: Record<string, Exercise[]> = {
       target: "Mid/Upper Chest Isolation",
       sets: 3,
       reps: "10-12",
-      mediaType: "video",
-      mediaSource: require("@/assets/videos/hammer_press.mp4"),
+      mediaType: "gif",
+      mediaSource: {
+        uri: "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Leverage_Incline_Chest_Press/0.gif",
+      },
       tip: "Great for heavy pressing safely without spotter.",
       setupSteps: [
         "Load weight plates onto machine horns.",
@@ -159,13 +189,15 @@ export const EXERCISE_DATABASE: Record<string, Exercise[]> = {
     },
     {
       id: "c9",
-      name: "Chest Dips (Bodyweight or Assisted)",
+      name: "Chest Dips",
       muscle: "chest",
       target: "Lower Chest & Triceps",
       sets: 3,
       reps: "8-10",
-      mediaType: "video",
-      mediaSource: require("@/assets/videos/chest_dips.mp4"),
+      mediaType: "gif",
+      mediaSource: {
+        uri: "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Chest_Dip/0.gif",
+      },
       tip: "Lean torso forward 30 degrees to target chest rather than triceps.",
       setupSteps: [
         "Grip dip bars and elevate body.",
@@ -182,8 +214,10 @@ export const EXERCISE_DATABASE: Record<string, Exercise[]> = {
       target: "Core & Chest Bodyweight",
       sets: 3,
       reps: "12-15",
-      mediaType: "video",
-      mediaSource: require("@/assets/videos/pushups.mp4"),
+      mediaType: "gif",
+      mediaSource: {
+        uri: "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Push-up/0.gif",
+      },
       tip: "Keep body in rigid straight line from head to heels.",
       setupSteps: [
         "Hands slightly wider than shoulders on floor.",
@@ -193,4 +227,9 @@ export const EXERCISE_DATABASE: Record<string, Exercise[]> = {
       mistakes: ["Hips sagging toward floor"],
     },
   ],
+  back: [],
+  legs: [],
+  shoulders: [],
+  arms: [],
+  abs: [],
 };

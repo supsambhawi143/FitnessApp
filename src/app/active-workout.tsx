@@ -1,24 +1,28 @@
 import { EXERCISE_DATABASE, Exercise } from "@/app/exercises";
 import { supabase } from "@/lib/supabase";
-import { ResizeMode, Video } from "expo-av";
+import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   Alert,
-  Image,
   Modal,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ActiveWorkoutScreen() {
   const params = useLocalSearchParams();
-  const selectedMuscles = ((params.muscles as string) || "chest").split(",");
 
+  // Safely parse selected muscles with fallback
+  const selectedMuscles = ((params.muscles as string) || "chest")
+    .split(",")
+    .map((m) => m.trim().toLowerCase());
+
+  // Flatten exercises safely and default to empty array if muscle key is missing
   const activeExercises: Exercise[] = selectedMuscles.flatMap(
     (m) => EXERCISE_DATABASE[m] || [],
   );
@@ -29,8 +33,9 @@ export default function ActiveWorkoutScreen() {
   const [isResting, setIsResting] = useState(false);
   const [restTimeLeft, setRestTimeLeft] = useState(60);
 
+  // Safe fallback if activeExercises is empty
   const currentExercise =
-    activeExercises[currentIndex] || EXERCISE_DATABASE.chest[0];
+    activeExercises[currentIndex] || EXERCISE_DATABASE.chest?.[0];
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval>;
@@ -70,6 +75,8 @@ export default function ActiveWorkoutScreen() {
   };
 
   const handleNextSet = async () => {
+    if (!currentExercise) return;
+
     if (currentSet < currentExercise.sets) {
       setCurrentSet(currentSet + 1);
       startRestTimer();
@@ -98,6 +105,30 @@ export default function ActiveWorkoutScreen() {
     }
   };
 
+  // Guard clause to prevent rendering errors if exercise database is empty or missing key
+  if (!currentExercise) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
+          <Text style={{ color: "#ffffff", fontSize: 16 }}>
+            No exercises found for selected muscle group.
+          </Text>
+          <TouchableOpacity
+            style={[
+              styles.actionButton,
+              { marginTop: 20, paddingHorizontal: 20 },
+            ]}
+            onPress={() => router.back()}
+          >
+            <Text style={styles.actionButtonText}>Go Back</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -114,34 +145,34 @@ export default function ActiveWorkoutScreen() {
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.mediaContainer}>
-          {currentExercise?.mediaType === "video" ? (
-            <Video
-              source={currentExercise.mediaSource}
-              style={styles.mediaPlayer}
-              resizeMode={ResizeMode.COVER}
-              isLooping
-              shouldPlay
-              isMuted
-            />
-          ) : (
-            <Image
-              source={currentExercise?.mediaSource}
-              style={styles.mediaPlayer}
-            />
-          )}
-
+          <Image
+            source={
+              typeof currentExercise.mediaSource === "object"
+                ? {
+                    uri: currentExercise.mediaSource.uri,
+                    headers: {
+                      "User-Agent":
+                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+                    },
+                  }
+                : currentExercise.mediaSource
+            }
+            style={styles.mediaPlayer}
+            contentFit="cover"
+            autoplay={true}
+          />
           <View style={styles.badge}>
             <Text style={styles.badgeText}>🟢 Form Loop</Text>
           </View>
         </View>
 
-        <Text style={styles.exerciseTitle}>{currentExercise?.name}</Text>
+        <Text style={styles.exerciseTitle}>{currentExercise.name}</Text>
         <Text style={styles.exerciseSubtitle}>
-          Target: {currentExercise?.target} • {currentExercise?.sets} Sets ×{" "}
-          {currentExercise?.reps} Reps
+          Target: {currentExercise.target} • {currentExercise.sets} Sets ×{" "}
+          {currentExercise.reps} Reps
         </Text>
 
-        {currentExercise?.tip && (
+        {currentExercise.tip && (
           <View style={styles.tipCard}>
             <Text style={styles.tipTitle}>⚠️ Key Beginner Tip</Text>
             <Text style={styles.tipText}>{currentExercise.tip}</Text>
@@ -149,7 +180,7 @@ export default function ActiveWorkoutScreen() {
         )}
 
         <Text style={styles.sectionHeader}>HOW TO PERFORM</Text>
-        {currentExercise?.setupSteps?.map((step, idx) => (
+        {(currentExercise.setupSteps || []).map((step, idx) => (
           <View key={idx} style={styles.stepRow}>
             <Text style={styles.stepNumber}>0{idx + 1}</Text>
             <Text style={styles.stepText}>{step}</Text>
@@ -157,7 +188,7 @@ export default function ActiveWorkoutScreen() {
         ))}
 
         <Text style={styles.sectionHeader}>COMMON MISTAKES TO AVOID</Text>
-        {currentExercise?.mistakes?.map((mistake, idx) => (
+        {(currentExercise.mistakes || []).map((mistake, idx) => (
           <Text key={idx} style={styles.mistakeText}>
             ❌ {mistake}
           </Text>
@@ -166,19 +197,19 @@ export default function ActiveWorkoutScreen() {
         {/* Set Tracker Bar */}
         <View style={styles.trackerCard}>
           <Text style={styles.trackerText}>
-            Set {currentSet} of {currentExercise?.sets}
+            Set {currentSet} of {currentExercise.sets}
           </Text>
           <Text style={styles.targetReps}>
-            Target: {currentExercise?.reps} Reps
+            Target: {currentExercise.reps} Reps
           </Text>
         </View>
 
         <TouchableOpacity style={styles.actionButton} onPress={handleNextSet}>
           <Text style={styles.actionButtonText}>
-            {currentSet === currentExercise?.sets &&
+            {currentSet === currentExercise.sets &&
             currentIndex === activeExercises.length - 1
               ? "FINISH WORKOUT"
-              : currentSet === currentExercise?.sets
+              : currentSet === currentExercise.sets
                 ? "NEXT EXERCISE →"
                 : "COMPLETE SET"}
           </Text>
