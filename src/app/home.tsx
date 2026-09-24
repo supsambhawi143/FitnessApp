@@ -24,6 +24,7 @@ const DEFAULT_MUSCLE_GROUPS = [
 export default function HomeScreen() {
   const [userName, setUserName] = useState("User");
   const [userInitials, setUserInitials] = useState("U");
+  const [isNewUser, setIsNewUser] = useState(true);
   const [selectedMuscles, setSelectedMuscles] = useState<string[]>(["chest"]);
 
   // Safely fallback to DEFAULT_MUSCLE_GROUPS if import is undefined
@@ -54,6 +55,11 @@ export default function HomeScreen() {
           .toUpperCase()
           .slice(0, 2),
       );
+
+      // Check account age: New user if created within 24 hours
+      const createdAt = new Date(user.created_at).getTime();
+      const hoursSinceCreation = (Date.now() - createdAt) / (1000 * 60 * 60);
+      setIsNewUser(hoursSinceCreation <= 24);
     }
   };
 
@@ -83,7 +89,9 @@ export default function HomeScreen() {
         {/* Header */}
         <View style={styles.header}>
           <View>
-            <Text style={styles.greeting}>WELCOME,</Text>
+            <Text style={styles.greeting}>
+              {isNewUser ? "WELCOME," : "WELCOME BACK,"}
+            </Text>
             <Text style={styles.userName}>{userName}</Text>
           </View>
           <View style={styles.avatar}>

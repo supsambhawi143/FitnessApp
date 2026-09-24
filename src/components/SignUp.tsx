@@ -18,6 +18,8 @@ export default function SignUp({ onSwitchToLogin }: SignUpProps) {
     fullName: "",
     email: "",
     password: "",
+    weight: "", // Added state for weight
+    height: "", // Added state for height
   });
   const [loading, setLoading] = useState(false);
 
@@ -26,31 +28,57 @@ export default function SignUp({ onSwitchToLogin }: SignUpProps) {
   };
 
   const handleSubmit = async () => {
-    if (!formData.email || !formData.password) {
-      Alert.alert("Error", "Please fill in all fields.");
+    if (
+      !formData.email ||
+      !formData.password ||
+      !formData.weight ||
+      !formData.height
+    ) {
+      Alert.alert(
+        "Error",
+        "Please fill in all fields including weight and height.",
+      );
       return;
     }
 
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
+
+    // 1. Create the user in Supabase Auth
+    const { data, error } = await supabase.auth.signUp({
       email: formData.email,
       password: formData.password,
       options: {
         data: { full_name: formData.fullName },
       },
     });
-    setLoading(false);
 
     if (error) {
+      setLoading(false);
       Alert.alert("Sign Up Failed", error.message);
-    } else {
-      Alert.alert(
-        "Account Created",
-        "Your account has been created successfully. Please log in to continue.",
-        [{ text: "OK", onPress: () => onSwitchToLogin() }],
-        { cancelable: false },
-      );
+      return;
     }
+
+    // 2. Insert/Upsert weight and height into the 'profiles' table using the newly created user's ID
+    if (data.user) {
+      const { error: profileError } = await supabase.from("profiles").upsert({
+        id: data.user.id,
+        weight: parseFloat(formData.weight),
+        height: parseFloat(formData.height),
+      });
+
+      if (profileError) {
+        console.error("Profile save error:", profileError.message);
+      }
+    }
+
+    setLoading(false);
+
+    Alert.alert(
+      "Account Created",
+      "Your account has been created successfully. Please log in to continue.",
+      [{ text: "OK", onPress: () => onSwitchToLogin() }],
+      { cancelable: false },
+    );
   };
 
   return (
@@ -81,6 +109,26 @@ export default function SignUp({ onSwitchToLogin }: SignUpProps) {
         value={formData.password}
         onChangeText={(text) => handleChange("password", text)}
       />
+
+      {/* Inputs for Height & Weight */}
+      <View style={styles.row}>
+        <TextInput
+          style={[styles.input, styles.halfInput]}
+          placeholder="Weight (kg)"
+          placeholderTextColor="#64748b"
+          keyboardType="numeric"
+          value={formData.weight}
+          onChangeText={(text) => handleChange("weight", text)}
+        />
+        <TextInput
+          style={[styles.input, styles.halfInput]}
+          placeholder="Height (cm)"
+          placeholderTextColor="#64748b"
+          keyboardType="numeric"
+          value={formData.height}
+          onChangeText={(text) => handleChange("height", text)}
+        />
+      </View>
 
       <TouchableOpacity
         style={styles.button}
@@ -125,6 +173,13 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.05)",
+  },
+  row: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  halfInput: {
+    flex: 1,
   },
   button: {
     backgroundColor: "#dc2626",
