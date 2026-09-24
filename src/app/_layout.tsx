@@ -1,22 +1,43 @@
-import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from "expo-router";
+import { supabase } from "@/lib/supabase";
+import { Stack, router } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
-import { useColorScheme } from "react-native";
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-
   useEffect(() => {
     SplashScreen.hideAsync();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        // Only trigger redirection on explicit login or initial session load
+        if (
+          session?.user &&
+          (event === "SIGNED_IN" || event === "INITIAL_SESSION")
+        ) {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("onboarding_completed")
+            .eq("id", session.user.id)
+            .single();
+
+          if (profile && !profile.onboarding_completed) {
+            router.replace("/onboarding");
+          }
+        }
+      },
+    );
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
   }, []);
 
   return (
-    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="index" />
-      </Stack>
-    </ThemeProvider>
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="index" />
+      <Stack.Screen name="onboarding" />
+    </Stack>
   );
 }

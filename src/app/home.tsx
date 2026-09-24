@@ -83,7 +83,7 @@ export default function HomeScreen() {
         {/* Header */}
         <View style={styles.header}>
           <View>
-            <Text style={styles.greeting}>WELCOME BACK,</Text>
+            <Text style={styles.greeting}>WELCOME,</Text>
             <Text style={styles.userName}>{userName}</Text>
           </View>
           <View style={styles.avatar}>
