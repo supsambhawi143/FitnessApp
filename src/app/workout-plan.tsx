@@ -2,12 +2,12 @@ import { supabase } from "@/lib/supabase";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -28,62 +28,78 @@ type Profile = {
   hours_per_session?: string;
 };
 
-type Exercise = { name: string; sets: number; reps: string; caution?: boolean };
+type PoolItem = {
+  id?: string;
+  name: string;
+  media_url?: string;
+  media_type?: string;
+};
+
+type Exercise = {
+  id?: string;
+  name: string;
+  sets: number;
+  reps: string;
+  caution?: boolean;
+  mediaUrl?: string;
+  mediaType?: string;
+};
+
 type DayPlan = { dayLabel: string; focus: string; exercises: Exercise[] };
 
 const DAY_ORDER = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-// ---------- Exercise pool, tagged by body area they stress ----------
-const POOL: Record<string, { name: string; tags: string[] }[]> = {
+// ---------- Fallback pool (used if the exercises table has no matches) ----------
+const FALLBACK_POOL: Record<string, PoolItem[]> = {
   chest: [
-    { name: "Barbell Bench Press", tags: ["shoulder"] },
-    { name: "Incline Dumbbell Press", tags: ["shoulder"] },
-    { name: "Machine Chest Press", tags: [] },
-    { name: "Push-Ups", tags: [] },
-    { name: "Cable Chest Fly", tags: ["shoulder"] },
+    { name: "Barbell Bench Press" },
+    { name: "Incline Dumbbell Press" },
+    { name: "Machine Chest Press" },
+    { name: "Push-Ups" },
+    { name: "Cable Chest Fly" },
   ],
   back: [
-    { name: "Lat Pulldown", tags: [] },
-    { name: "Seated Cable Row", tags: [] },
-    { name: "Single-Arm Dumbbell Row", tags: [] },
-    { name: "Assisted Pull-Ups", tags: ["shoulder"] },
-    { name: "Back Extension", tags: ["back"] },
+    { name: "Lat Pulldown" },
+    { name: "Seated Cable Row" },
+    { name: "Single-Arm Dumbbell Row" },
+    { name: "Assisted Pull-Ups" },
+    { name: "Back Extension" },
   ],
   legs: [
-    { name: "Leg Press", tags: ["knee"] },
-    { name: "Barbell Back Squat", tags: ["knee", "back"] },
-    { name: "Walking Lunges", tags: ["knee"] },
-    { name: "Romanian Deadlift", tags: ["back"] },
-    { name: "Leg Extension", tags: ["knee"] },
-    { name: "Seated Leg Curl", tags: [] },
-    { name: "Glute Bridge", tags: [] },
+    { name: "Leg Press" },
+    { name: "Barbell Back Squat" },
+    { name: "Walking Lunges" },
+    { name: "Romanian Deadlift" },
+    { name: "Leg Extension" },
+    { name: "Seated Leg Curl" },
+    { name: "Glute Bridge" },
   ],
   shoulders: [
-    { name: "Machine Shoulder Press", tags: ["shoulder"] },
-    { name: "Lateral Raise", tags: [] },
-    { name: "Rear Delt Fly", tags: [] },
-    { name: "Face Pull", tags: [] },
-    { name: "Front Raise", tags: ["shoulder"] },
+    { name: "Machine Shoulder Press" },
+    { name: "Lateral Raise" },
+    { name: "Rear Delt Fly" },
+    { name: "Face Pull" },
+    { name: "Front Raise" },
   ],
   arms: [
-    { name: "Cable Curl", tags: [] },
-    { name: "Hammer Curl", tags: [] },
-    { name: "Tricep Rope Pushdown", tags: [] },
-    { name: "Overhead Tricep Extension", tags: ["shoulder"] },
-    { name: "Barbell Bicep Curl", tags: [] },
+    { name: "Cable Curl" },
+    { name: "Hammer Curl" },
+    { name: "Tricep Rope Pushdown" },
+    { name: "Overhead Tricep Extension" },
+    { name: "Barbell Bicep Curl" },
   ],
   abs: [
-    { name: "Plank", tags: [] },
-    { name: "Bicycle Crunch", tags: [] },
-    { name: "Cable Crunch", tags: ["back"] },
-    { name: "Hanging Leg Raise", tags: ["shoulder"] },
-    { name: "Russian Twist", tags: ["back"] },
+    { name: "Plank" },
+    { name: "Bicycle Crunch" },
+    { name: "Cable Crunch" },
+    { name: "Hanging Leg Raise" },
+    { name: "Russian Twist" },
   ],
   cardio: [
-    { name: "Incline Treadmill Walk", tags: [] },
-    { name: "Elliptical", tags: [] },
-    { name: "Stationary Bike Intervals", tags: ["knee"] },
-    { name: "Rowing Machine", tags: ["back"] },
+    { name: "Incline Treadmill Walk" },
+    { name: "Elliptical" },
+    { name: "Stationary Bike Intervals" },
+    { name: "Rowing Machine" },
   ],
 };
 
@@ -98,20 +114,40 @@ function getInjuryTags(details?: string): string[] {
   return tags;
 }
 
+// Heuristic: guess which body area an exercise stresses from its name,
+// so injury avoidance works whether the exercise came from the DB or the
+// static fallback pool.
+function computeTags(name: string): string[] {
+  const n = name.toLowerCase();
+  const tags: string[] = [];
+  if (/squat|lunge|leg press|leg extension/.test(n)) tags.push("knee");
+  if (/deadlift|back extension|good morning/.test(n)) tags.push("back");
+  if (/overhead|shoulder press|push press|military press|pull-?up|dip/.test(n))
+    tags.push("shoulder");
+  return tags;
+}
+
 function pickExercises(
-  group: keyof typeof POOL,
+  pool: PoolItem[],
   count: number,
   avoidTags: string[],
 ): Exercise[] {
-  const pool = POOL[group];
-  const safe = pool.filter((e) => !e.tags.some((t) => avoidTags.includes(t)));
-  const risky = pool.filter((e) => e.tags.some((t) => avoidTags.includes(t)));
+  const withTags = pool.map((e) => ({ ...e, tags: computeTags(e.name) }));
+  const safe = withTags.filter(
+    (e) => !e.tags.some((t) => avoidTags.includes(t)),
+  );
+  const risky = withTags.filter((e) =>
+    e.tags.some((t) => avoidTags.includes(t)),
+  );
   const chosen = [...safe, ...risky].slice(0, count);
   return chosen.map((e) => ({
+    id: e.id,
     name: e.name,
-    sets: 0, // filled in by caller
+    sets: 0,
     reps: "",
     caution: e.tags.some((t) => avoidTags.includes(t)),
+    mediaUrl: e.media_url,
+    mediaType: e.media_type,
   }));
 }
 
@@ -125,20 +161,19 @@ function getVolume(goal: string, experience: string) {
       reps: "8-12",
     };
   }
-  return { sets: 3, reps: "10-12" }; // stay_fit
+  return { sets: 3, reps: "10-12" };
 }
 
 function getExercisesPerDay(hoursPerSession?: string) {
   if (hoursPerSession === "<1") return 4;
   if (hoursPerSession === "2+") return 8;
-  return 6; // 1-2
+  return 6;
 }
 
 function sortDays(days: string[]): string[] {
   return [...days].sort((a, b) => DAY_ORDER.indexOf(a) - DAY_ORDER.indexOf(b));
 }
 
-// Choose a split (a repeating list of "focus" labels) based on days/experience
 function getSplit(numDays: number, experience: string): string[] {
   if (numDays <= 2) return ["Full Body", "Full Body"];
   if (numDays === 3) {
@@ -151,7 +186,7 @@ function getSplit(numDays: number, experience: string): string[] {
   return ["Push", "Pull", "Legs", "Push", "Pull", "Legs", "Active Recovery"];
 }
 
-const FOCUS_GROUPS: Record<string, (keyof typeof POOL)[]> = {
+const FOCUS_GROUPS: Record<string, string[]> = {
   "Full Body": ["chest", "back", "legs", "abs"],
   Push: ["chest", "shoulders", "arms"],
   Pull: ["back", "arms"],
@@ -161,11 +196,10 @@ const FOCUS_GROUPS: Record<string, (keyof typeof POOL)[]> = {
   "Active Recovery": ["cardio", "abs"],
 };
 
-function buildPlan(profile: Profile): {
-  splitName: string;
-  days: DayPlan[];
-  cardioNote: string;
-} {
+function buildPlan(
+  profile: Profile,
+  exercisesByGroup: Record<string, PoolItem[]>,
+): { splitName: string; days: DayPlan[]; cardioNote: string } {
   const days = sortDays(profile.training_days || []);
   const experience = profile.training_experience || "beginner";
   const goal = profile.primary_goal || "stay_fit";
@@ -183,7 +217,10 @@ function buildPlan(profile: Profile): {
 
       let exercises: Exercise[] = [];
       groups.forEach((g) => {
-        exercises = exercises.concat(pickExercises(g, perGroup, avoidTags));
+        const pool = exercisesByGroup[g]?.length
+          ? exercisesByGroup[g]
+          : FALLBACK_POOL[g] || [];
+        exercises = exercises.concat(pickExercises(pool, perGroup, avoidTags));
       });
       exercises = exercises.slice(0, exercisesPerDay).map((e) => ({
         ...e,
@@ -219,27 +256,53 @@ function buildPlan(profile: Profile): {
 // ---------- Screen ----------
 export default function WorkoutPlanScreen() {
   const [loading, setLoading] = useState(true);
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [plan, setPlan] = useState<{
+    splitName: string;
+    days: DayPlan[];
+    cardioNote: string;
+  } | null>(null);
 
   useEffect(() => {
-    fetchProfile();
+    load();
   }, []);
 
-  const fetchProfile = async () => {
+  const load = async () => {
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
-    if (user) {
-      const { data } = await supabase
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
+    const [{ data: profileData }, { data: exerciseRows }] = await Promise.all([
+      supabase
         .from("profiles")
         .select(
           "gender, age, height_cm, weight_kg, target_weight_kg, current_body_shape, dream_body_shape, primary_goal, training_experience, has_injury, injury_details, training_days, hours_per_session",
         )
         .eq("id", user.id)
-        .single();
+        .single(),
+      supabase
+        .from("exercises")
+        .select("id, name, muscle_group, media_url, media_type"),
+    ]);
 
-      if (data) setProfile(data as Profile);
+    const exercisesByGroup: Record<string, PoolItem[]> = {};
+    (exerciseRows || []).forEach((row: any) => {
+      const key = (row.muscle_group || "").toLowerCase().trim();
+      if (!exercisesByGroup[key]) exercisesByGroup[key] = [];
+      exercisesByGroup[key].push({
+        id: row.id,
+        name: row.name,
+        media_url: row.media_url,
+        media_type: row.media_type,
+      });
+    });
+
+    if (profileData) {
+      setPlan(buildPlan(profileData as Profile, exercisesByGroup));
     }
     setLoading(false);
   };
@@ -253,7 +316,7 @@ export default function WorkoutPlanScreen() {
     );
   }
 
-  if (!profile) {
+  if (!plan) {
     return (
       <SafeAreaView style={styles.loadingContainer}>
         <Text style={styles.loadingText}>
@@ -263,11 +326,16 @@ export default function WorkoutPlanScreen() {
     );
   }
 
-  const { splitName, days, cardioNote } = buildPlan(profile);
-  const weightDiff =
-    profile.target_weight_kg && profile.weight_kg
-      ? profile.target_weight_kg - profile.weight_kg
-      : null;
+  const openDay = (day: DayPlan) => {
+    router.push({
+      pathname: "/workout-day" as any,
+      params: {
+        dayLabel: day.dayLabel,
+        focus: day.focus,
+        exercises: JSON.stringify(day.exercises),
+      },
+    });
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -275,62 +343,49 @@ export default function WorkoutPlanScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.eyebrow}>YOUR PLAN IS READY</Text>
-        <Text style={styles.title}>{splitName}</Text>
-
-        {weightDiff !== null && (
-          <Text style={styles.subtitle}>
-            {weightDiff === 0
-              ? "Goal: maintain your current weight"
-              : weightDiff < 0
-                ? `Goal: lose ${Math.abs(weightDiff)} kg`
-                : `Goal: gain ${weightDiff} kg`}
-          </Text>
-        )}
-
-        {profile.has_injury && (
-          <View style={styles.cautionBanner}>
-            <Text style={styles.cautionTitle}>
-              ⚠️ Training around an injury
-            </Text>
-            <Text style={styles.cautionText}>
-              You mentioned: "{profile.injury_details}". Exercises marked ⚠️
-              below may stress that area — swap them for a machine variation or
-              lighter load, and check with a professional if pain persists.
-            </Text>
+        <View style={styles.topRow}>
+          <View>
+            <Text style={styles.eyebrow}>YOUR PLAN IS READY</Text>
+            <Text style={styles.title}>{plan.splitName}</Text>
           </View>
-        )}
+          <TouchableOpacity
+            style={styles.homePill}
+            onPress={() => router.replace("/home")}
+          >
+            <Text style={styles.homePillText}>🏠 Home</Text>
+          </TouchableOpacity>
+        </View>
 
-        {days.map((day, idx) => (
-          <View key={idx} style={styles.dayCard}>
+        <Text style={styles.helperText}>Tap a day to see its exercises</Text>
+
+        {plan.days.map((day, idx) => (
+          <TouchableOpacity
+            key={idx}
+            style={styles.dayCard}
+            activeOpacity={0.7}
+            onPress={() => openDay(day)}
+          >
             <View style={styles.dayHeader}>
               <Text style={styles.dayLabel}>{day.dayLabel}</Text>
               <Text style={styles.dayFocus}>{day.focus}</Text>
             </View>
-            {day.exercises.map((ex, i) => (
-              <View key={i} style={styles.exerciseRow}>
-                <Text style={styles.exerciseName}>
-                  {ex.caution ? "⚠️ " : ""}
-                  {ex.name}
-                </Text>
-                <Text style={styles.exerciseDetail}>
-                  {ex.sets > 0 ? `${ex.sets} x ${ex.reps}` : ex.reps}
-                </Text>
-              </View>
-            ))}
-          </View>
+            <Text style={styles.dayPreview} numberOfLines={1}>
+              {day.exercises.map((e) => e.name).join(" • ")}
+            </Text>
+            <Text style={styles.dayArrow}>View exercises →</Text>
+          </TouchableOpacity>
         ))}
 
         <View style={styles.noteCard}>
           <Text style={styles.noteTitle}>CARDIO NOTE</Text>
-          <Text style={styles.noteText}>{cardioNote}</Text>
+          <Text style={styles.noteText}>{plan.cardioNote}</Text>
         </View>
 
         <TouchableOpacity
           style={styles.button}
-          onPress={() => router.replace("/")}
+          onPress={() => router.replace("/home")}
         >
-          <Text style={styles.buttonText}>START TRAINING →</Text>
+          <Text style={styles.buttonText}>EXPLORE HOME →</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
@@ -348,6 +403,12 @@ const styles = StyleSheet.create({
   },
   loadingText: { color: "#94a3b8", marginTop: 12, textAlign: "center" },
   scrollContent: { padding: 20, paddingBottom: 40 },
+  topRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 8,
+  },
   eyebrow: {
     color: "#dc2626",
     fontSize: 12,
@@ -355,18 +416,17 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
     marginBottom: 6,
   },
-  title: { color: "#ffffff", fontSize: 26, fontWeight: "800" },
-  subtitle: { color: "#94a3b8", fontSize: 14, marginTop: 6, marginBottom: 20 },
-  cautionBanner: {
-    backgroundColor: "rgba(220,38,38,0.12)",
+  title: { color: "#ffffff", fontSize: 24, fontWeight: "800" },
+  homePill: {
+    backgroundColor: "#1e232d",
     borderWidth: 1,
-    borderColor: "#dc2626",
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 20,
+    borderColor: "#334155",
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
   },
-  cautionTitle: { color: "#f87171", fontWeight: "800", marginBottom: 6 },
-  cautionText: { color: "#e2e8f0", fontSize: 12, lineHeight: 18 },
+  homePillText: { color: "#ffffff", fontWeight: "700", fontSize: 12 },
+  helperText: { color: "#64748b", fontSize: 12, marginBottom: 18 },
   dayCard: {
     backgroundColor: "#161b22",
     borderRadius: 16,
@@ -379,20 +439,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#2d3748",
-    paddingBottom: 8,
+    marginBottom: 8,
   },
   dayLabel: { color: "#ffffff", fontWeight: "800", fontSize: 15 },
   dayFocus: { color: "#dc2626", fontWeight: "800", fontSize: 12 },
-  exerciseRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingVertical: 6,
-  },
-  exerciseName: { color: "#e2e8f0", fontSize: 13, flex: 1, paddingRight: 8 },
-  exerciseDetail: { color: "#94a3b8", fontSize: 13, fontWeight: "700" },
+  dayPreview: { color: "#94a3b8", fontSize: 12, marginBottom: 10 },
+  dayArrow: { color: "#f87171", fontSize: 12, fontWeight: "700" },
   noteCard: {
     backgroundColor: "#1e232d",
     borderRadius: 12,
