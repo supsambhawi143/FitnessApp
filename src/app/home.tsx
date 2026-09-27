@@ -15,10 +15,53 @@ import { SafeAreaView } from "react-native-safe-area-context";
 const DEFAULT_MUSCLE_GROUPS = [
   { id: "chest", label: "Chest" },
   { id: "back", label: "Back" },
-  { id: "legs", label: "Legs" },
   { id: "shoulders", label: "Shoulders" },
-  { id: "arms", label: "Arms" },
+  { id: "biceps", label: "Biceps" },
+  { id: "triceps", label: "Triceps" },
   { id: "abs", label: "Abs" },
+  { id: "legs", label: "Legs" },
+];
+
+// Beginner-friendly plans. Each maps to a simple, common gym split so
+// someone with no prior gym background can just tap one and go, without
+// needing to know what a "push day" or "split" means beforehand.
+const BEGINNER_PLANS = [
+  {
+    tag: "30 MINS",
+    title: "Full Body Express",
+    sub: "Chest, Back & Legs machine basics — the easiest place to start.",
+    muscles: "chest,back,legs",
+  },
+  {
+    tag: "35 MINS",
+    title: "Push Day (Upper)",
+    sub: "Chest, Shoulders & Triceps — muscles that work together to push weight away from you.",
+    muscles: "chest,shoulders,triceps",
+  },
+  {
+    tag: "35 MINS",
+    title: "Pull Day (Upper)",
+    sub: "Back & Biceps — the pulling counterpart to Push Day.",
+    muscles: "back,biceps",
+  },
+  {
+    tag: "30 MINS",
+    title: "Leg Day Basics",
+    sub: "Legs & Abs — don't skip this one, it's most of your body's muscle.",
+    muscles: "legs,abs",
+  },
+  {
+    tag: "40 MINS",
+    title: "Upper Body Blast",
+    sub: "Chest, Back & Shoulders together for a fuller upper-body session.",
+    muscles: "chest,back,shoulders",
+  },
+  {
+    tag: "20 MINS",
+    title: "Core & Conditioning",
+    sub: "A short, low-intimidation ab-focused session — good for an off day.",
+    muscles: "abs",
+  },
 ];
 
 export default function HomeScreen() {
@@ -153,37 +196,32 @@ export default function HomeScreen() {
 
         {/* 3. QUICK BEGINNER PRESETS */}
         <Text style={styles.sectionTitle}>RECOMMENDED BEGINNER PLANS</Text>
-        <View style={styles.presetRow}>
-          <TouchableOpacity
-            style={styles.presetCard}
-            onPress={() =>
-              router.push({
-                pathname: "/active-workout" as any,
-                params: { muscles: "chest,back,legs" },
-              })
-            }
-          >
-            <Text style={styles.presetTag}>30 MINS</Text>
-            <Text style={styles.presetTitle}>Full Body Express</Text>
-            <Text style={styles.presetSub}>
-              Chest, Back & Legs machine basics
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.presetCard}
-            onPress={() =>
-              router.push({
-                pathname: "/active-workout" as any,
-                params: { muscles: "chest,shoulders,triceps" },
-              })
-            }
-          >
-            <Text style={styles.presetTag}>35 MINS</Text>
-            <Text style={styles.presetTitle}>Push Day (Upper)</Text>
-            <Text style={styles.presetSub}>Chest, Shoulders & Triceps</Text>
-          </TouchableOpacity>
-        </View>
+        <Text style={styles.presetIntro}>
+          New here? These are ready-made — just tap one and the app tells you
+          exactly what to do, no gym experience needed.
+        </Text>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.presetRow}
+        >
+          {BEGINNER_PLANS.map((plan, i) => (
+            <TouchableOpacity
+              key={i}
+              style={styles.presetCard}
+              onPress={() =>
+                router.push({
+                  pathname: "/active-workout" as any,
+                  params: { muscles: plan.muscles },
+                })
+              }
+            >
+              <Text style={styles.presetTag}>{plan.tag}</Text>
+              <Text style={styles.presetTitle}>{plan.title}</Text>
+              <Text style={styles.presetSub}>{plan.sub}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
 
         {/* 4. GYM SURVIVAL TOOLKIT */}
         <Text style={styles.sectionTitle}>GYM TOOLKIT</Text>
@@ -331,9 +369,15 @@ const styles = StyleSheet.create({
     fontSize: 13,
     letterSpacing: 0.5,
   },
-  presetRow: { flexDirection: "row", gap: 12, marginBottom: 24 },
+  presetIntro: {
+    color: "#64748b",
+    fontSize: 12,
+    lineHeight: 17,
+    marginBottom: 14,
+  },
+  presetRow: { gap: 12, paddingBottom: 4, marginBottom: 24 },
   presetCard: {
-    flex: 1,
+    width: 200,
     backgroundColor: "#1e232d",
     padding: 14,
     borderRadius: 14,

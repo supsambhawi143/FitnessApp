@@ -20,10 +20,11 @@ export interface MuscleGroup {
 export const MUSCLE_GROUPS: MuscleGroup[] = [
   { id: "chest", label: "Chest" },
   { id: "back", label: "Back" },
-  { id: "legs", label: "Legs" },
   { id: "shoulders", label: "Shoulders" },
-  { id: "arms", label: "Arms" },
+  { id: "biceps", label: "Biceps" },
+  { id: "triceps", label: "Triceps" },
   { id: "abs", label: "Abs" },
+  { id: "legs", label: "Legs" },
 ];
 
 export const EXERCISE_DATABASE: Record<string, Exercise[]> = {
@@ -228,8 +229,21 @@ export const EXERCISE_DATABASE: Record<string, Exercise[]> = {
     },
   ],
   back: [],
-  legs: [],
   shoulders: [],
-  arms: [],
+  biceps: [],
+  triceps: [],
   abs: [],
+  legs: [],
 };
+
+// This file lives under app/ so Expo Router treats it as a route and warns
+// if there's no default export, even though it's only used as a data
+// module (imported for MUSCLE_GROUPS / EXERCISE_DATABASE) and never
+// actually navigated to. This no-op default silences that warning without
+// changing any behavior. If you'd rather not have a stray "/exercises"
+// route at all, the cleaner long-term fix is moving this file outside
+// app/ (e.g. to a lib/ or data/ folder) and updating the import paths
+// that reference "@/app/exercises".
+export default function ExercisesDataModule() {
+  return null;
+}

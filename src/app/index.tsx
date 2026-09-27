@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase"; // Adjust path if your lib folder is elsewhere
+import * as Linking from "expo-linking";
 import { router } from "expo-router";
 import { useState } from "react";
 import {
@@ -23,6 +24,41 @@ export default function AuthScreen() {
 
   const handleChange = (name: string, value: string) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // --- FORGOT PASSWORD FLOW ---
+  const handleForgotPassword = async () => {
+    if (!formData.email) {
+      Alert.alert(
+        "Enter Your Email",
+        "Please type your email address above, then tap 'Forgot password?' again.",
+      );
+      return;
+    }
+
+    setLoading(true);
+    // Builds the right scheme automatically: exp://... in Expo Go during
+    // dev, yourapp://... in a standalone/production build. This URL must
+    // also be added to Supabase → Authentication → URL Configuration →
+    // Redirect URLs, or Supabase will silently fall back to the project's
+    // default Site URL (often localhost) instead.
+    const redirectTo = Linking.createURL("reset-password");
+    console.log("Redirect URL:", redirectTo); // TEMP: check this matches your Supabase Redirect URLs allow list, then remove
+
+    const { error } = await supabase.auth.resetPasswordForEmail(
+      formData.email,
+      { redirectTo },
+    );
+    setLoading(false);
+
+    if (error) {
+      Alert.alert("Reset Failed", error.message);
+    } else {
+      Alert.alert(
+        "Check Your Email",
+        "If an account exists for that email, we've sent a password reset link.",
+      );
+    }
   };
 
   const handleSubmit = async () => {
@@ -55,7 +91,7 @@ export default function AuthScreen() {
         return;
       }
 
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
@@ -69,19 +105,42 @@ export default function AuthScreen() {
 
       if (error) {
         Alert.alert("Sign Up Failed", error.message);
-      } else {
-        Alert.alert(
-          "Account Created",
-          "Your account has been created successfully. Please log in to continue.",
-          [
-            {
-              text: "OK",
-              onPress: () => setIsLogin(true), // Switches view to Login screen
-            },
-          ],
-          { cancelable: false },
-        );
+        return;
       }
+
+      // Supabase does NOT return an error when the email is already
+      // registered — it silently returns a user object with an empty
+      // `identities` array instead (this is intentional, to stop the
+      // signup form being used to enumerate existing accounts). We have
+      // to check for that ourselves to know it wasn't a real signup.
+      const emailAlreadyRegistered =
+        data?.user && data.user.identities && data.user.identities.length === 0;
+
+      if (emailAlreadyRegistered) {
+        Alert.alert(
+          "Email Already Registered",
+          "An account with this email already exists. If this is you, log in below — or reset your password if you forgot it.",
+          [
+            { text: "Log In", onPress: () => setIsLogin(true) },
+            { text: "Reset Password", onPress: handleForgotPassword },
+            { text: "Cancel", style: "cancel" },
+          ],
+          { cancelable: true },
+        );
+        return;
+      }
+
+      Alert.alert(
+        "Account Created",
+        "Your account has been created successfully. Please log in to continue.",
+        [
+          {
+            text: "OK",
+            onPress: () => setIsLogin(true), // Switches view to Login screen
+          },
+        ],
+        { cancelable: false },
+      );
     }
   };
 
@@ -137,6 +196,15 @@ export default function AuthScreen() {
               onChangeText={(text) => handleChange("password", text)}
             />
           </View>
+
+          {isLogin && (
+            <TouchableOpacity
+              onPress={handleForgotPassword}
+              style={styles.forgotPasswordLink}
+            >
+              <Text style={styles.forgotPasswordText}>Forgot password?</Text>
+            </TouchableOpacity>
+          )}
 
           <TouchableOpacity
             style={[styles.button, loading && styles.buttonDisabled]}
@@ -228,6 +296,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     color: "#0f172a",
     fontSize: 14,
+  },
+  forgotPasswordLink: {
+    alignSelf: "flex-end",
+    marginBottom: 10,
+    marginTop: -6,
+  },
+  forgotPasswordText: {
+    color: "#f87171",
+    fontSize: 12,
+    fontWeight: "700",
   },
   button: {
     width: "100%",
