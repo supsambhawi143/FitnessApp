@@ -150,7 +150,7 @@ export default function HomeScreen() {
           <View style={styles.day0Badge}>
             <Text style={styles.day0BadgeText}>FIRST TIME AT GYM?</Text>
           </View>
-          <Text style={styles.day0Title}>Day 0: Survival & FAQ Guide</Text>
+          <Text style={styles.day0Title}>Survival & FAQ Guide</Text>
           <Text style={styles.day0Subtitle}>
             Learn sets/reps, machine setup, weight selection & etiquette →
           </Text>
