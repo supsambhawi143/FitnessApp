@@ -22,9 +22,6 @@ const DEFAULT_MUSCLE_GROUPS = [
   { id: "legs", label: "Legs" },
 ];
 
-// Beginner-friendly plans. Each maps to a simple, common gym split so
-// someone with no prior gym background can just tap one and go, without
-// needing to know what a "push day" or "split" means beforehand.
 const BEGINNER_PLANS = [
   {
     tag: "30 MINS",
@@ -70,7 +67,6 @@ export default function HomeScreen() {
   const [isNewUser, setIsNewUser] = useState(true);
   const [selectedMuscles, setSelectedMuscles] = useState<string[]>(["chest"]);
 
-  // Safely fallback to DEFAULT_MUSCLE_GROUPS if import is undefined
   const muscleGroups = MUSCLE_GROUPS || DEFAULT_MUSCLE_GROUPS;
 
   useEffect(() => {
@@ -123,6 +119,10 @@ export default function HomeScreen() {
     });
   };
 
+  const handleEditProfile = () => {
+    router.push("/profile" as any);
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
@@ -142,7 +142,7 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* 1. DAY 0 / BEGINNER ESSENTIALS BANNER */}
+        {/* 1./ BEGINNER ESSENTIALS BANNER */}
         <TouchableOpacity
           style={styles.day0Card}
           onPress={() => router.push("/day0-intro" as any)}

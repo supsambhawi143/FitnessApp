@@ -27,9 +27,6 @@ export const MUSCLE_GROUPS: MuscleGroup[] = [
   { id: "legs", label: "Legs" },
 ];
 
-// Image URLs point at yuhonas/free-exercise-db (public domain / Unlicense).
-// Every id below was verified against the dataset's actual folder names,
-// and the real file extension there is .jpg (not .gif).
 const FREE_EXERCISE_DB =
   "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises";
 
@@ -90,7 +87,7 @@ export const EXERCISE_DATABASE: Record<string, Exercise[]> = {
       reps: "8-10",
       mediaType: "gif",
       mediaSource: {
-        uri: "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Incline_Bench_Press/0.gif",
+        uri: "${FREE_EXERCISE_DB}/Barbell_Incline_Bench_Press/0.gif",
       },
       tip: "Set the bench at a slight angle, not too steep.",
       setupSteps: [
@@ -235,6 +232,44 @@ export const EXERCISE_DATABASE: Record<string, Exercise[]> = {
         "Push yourself back up to the top.",
       ],
       mistakes: ["Do not let your hips drop down"],
+    },
+    {
+      id: "c11",
+      name: "Dumbbell Flyes",
+      muscle: "chest",
+      target: "Chest Stretch & Isolation",
+      sets: 3,
+      reps: "10-12",
+      mediaType: "image",
+      mediaSource: {
+        uri: `${FREE_EXERCISE_DB}/Dumbbell_Flyes/0.jpg`,
+      },
+      tip: "Keep a soft bend in your elbows throughout the movement.",
+      setupSteps: [
+        "Lie on a flat bench holding dumbbells above your chest.",
+        "Lower weights in a wide arc until you feel a comfortable stretch in your chest.",
+        "Squeeze chest muscles to bring dumbbells back to starting position.",
+      ],
+      mistakes: ["Do not bend elbows too much turning it into a press"],
+    },
+    {
+      id: "c12",
+      name: "Cable Crossover",
+      muscle: "chest",
+      target: "Lower & Inner Chest",
+      sets: 3,
+      reps: "12-15",
+      mediaType: "image",
+      mediaSource: {
+        uri: `${FREE_EXERCISE_DB}/Cable_Crossover/0.jpg`,
+      },
+      tip: "Cross your hands slightly at the bottom for maximal squeeze.",
+      setupSteps: [
+        "Set pulleys at high position and grab handles.",
+        "Step forward slightly with one foot for balance.",
+        "Bring handles down and together in front of your waist.",
+      ],
+      mistakes: ["Do not swing your upper body to pull handles"],
     },
   ],
 
@@ -414,6 +449,44 @@ export const EXERCISE_DATABASE: Record<string, Exercise[]> = {
         "Do not let the weight hit the floor hard",
       ],
     },
+    {
+      id: "b9",
+      name: "Lat Pulldown",
+      muscle: "back",
+      target: "Upper Back & Lats",
+      sets: 3,
+      reps: "10-12",
+      mediaType: "image",
+      mediaSource: {
+        uri: `${FREE_EXERCISE_DB}/Cable_Wide-Grip_Lat_Pulldown/0.jpg`,
+      },
+      tip: "Pull with your elbows driving straight down to your sides.",
+      setupSteps: [
+        "Sit at machine with thighs snug under pads.",
+        "Grip bar wider than shoulder width.",
+        "Pull bar down to upper chest while leaning back slightly.",
+      ],
+      mistakes: ["Do not pull the bar behind your neck"],
+    },
+    {
+      id: "b10",
+      name: "Seated Cable Row",
+      muscle: "back",
+      target: "Middle Back Thickness",
+      sets: 3,
+      reps: "10-12",
+      mediaType: "image",
+      mediaSource: {
+        uri: `${FREE_EXERCISE_DB}/Cable_Seated_Row/0.jpg`,
+      },
+      tip: "Avoid leaning back too far as you pull the handles.",
+      setupSteps: [
+        "Sit with feet on footrests and knees slightly bent.",
+        "Grip handles and keep torso erect.",
+        "Pull handle toward belly button squeezing shoulder blades together.",
+      ],
+      mistakes: ["Do not rock your torso backward and forward"],
+    },
   ],
 
   shoulders: [
@@ -588,6 +661,46 @@ export const EXERCISE_DATABASE: Record<string, Exercise[]> = {
         "Do not stand too straight",
       ],
     },
+    {
+      id: "s9",
+      name: "Side Lateral Raise",
+      muscle: "shoulders",
+      target: "Side Delts",
+      sets: 3,
+      reps: "12-15",
+      mediaType: "image",
+      mediaSource: {
+        uri: `${FREE_EXERCISE_DB}/Side_Lateral_Raise/0.jpg`,
+      },
+      tip: "Lead with your elbows and tilt pinkies slightly up at top.",
+      setupSteps: [
+        "Stand holding dumbbells at your sides.",
+        "Raise arms out to sides until parallel to floor.",
+        "Lower back down slowly under control.",
+      ],
+      mistakes: ["Do not shrug your shoulders up while lifting"],
+    },
+    {
+      id: "s10",
+      name: "Barbell Upright Row",
+      muscle: "shoulders",
+      target: "Traps & Delts",
+      sets: 3,
+      reps: "10-12",
+      mediaType: "image",
+      mediaSource: {
+        uri: `${FREE_EXERCISE_DB}/Upright_Barbell_Row/0.jpg`,
+      },
+      tip: "Keep the bar close to your body during the entire movement.",
+      setupSteps: [
+        "Grip barbell with palms facing you, narrower than shoulder width.",
+        "Pull bar straight up toward chin leading with elbows.",
+        "Lower bar back down slowly.",
+      ],
+      mistakes: [
+        "Do not raise elbows higher than your shoulders if uncomfortable",
+      ],
+    },
   ],
 
   biceps: [
@@ -674,6 +787,44 @@ export const EXERCISE_DATABASE: Record<string, Exercise[]> = {
         "Do not stop early, go all the way down",
         "Do not hold the bar too wide or too narrow",
       ],
+    },
+    {
+      id: "bi5",
+      name: "Concentration Curls",
+      muscle: "biceps",
+      target: "Biceps Peak",
+      sets: 3,
+      reps: "10-12",
+      mediaType: "image",
+      mediaSource: {
+        uri: `${FREE_EXERCISE_DB}/Concentration_Curls/0.jpg`,
+      },
+      tip: "Rest your triceps against your inner thigh to lock posture.",
+      setupSteps: [
+        "Sit on bench, hold dumbbell in one hand.",
+        "Rest elbow against inner thigh.",
+        "Curl dumbbell up toward chest and squeeze.",
+      ],
+      mistakes: ["Do not swing your torso during curl"],
+    },
+    {
+      id: "bi6",
+      name: "Preacher Curl",
+      muscle: "biceps",
+      target: "Lower Biceps Isolation",
+      sets: 3,
+      reps: "10-12",
+      mediaType: "image",
+      mediaSource: {
+        uri: `${FREE_EXERCISE_DB}/Preacher_Curl/0.jpg`,
+      },
+      tip: "Keep triceps flush on the pad at all times.",
+      setupSteps: [
+        "Sit at preacher bench, resting arms over pad.",
+        "Hold barbell with underhand grip.",
+        "Curl bar upward towards shoulders, then slowly lower.",
+      ],
+      mistakes: ["Do not fully snap elbows locked at the bottom"],
     },
   ],
 
@@ -778,6 +929,44 @@ export const EXERCISE_DATABASE: Record<string, Exercise[]> = {
         "Do not open your elbows out wide",
         "Do not bounce the bar on the boards",
       ],
+    },
+    {
+      id: "t6",
+      name: "Triceps Pushdown",
+      muscle: "triceps",
+      target: "Triceps Lateral Head",
+      sets: 3,
+      reps: "10-12",
+      mediaType: "image",
+      mediaSource: {
+        uri: `${FREE_EXERCISE_DB}/Cable_Pushdown/0.jpg`,
+      },
+      tip: "Pin your elbows to your sides throughout the set.",
+      setupSteps: [
+        "Attach bar or rope to high pulley.",
+        "Hold with palms facing down or together.",
+        "Push handle down until arms are fully extended.",
+      ],
+      mistakes: ["Do not let your shoulders roll forward"],
+    },
+    {
+      id: "t7",
+      name: "Standing Dumbbell Triceps Extension",
+      muscle: "triceps",
+      target: "Triceps Long Head",
+      sets: 3,
+      reps: "10-12",
+      mediaType: "image",
+      mediaSource: {
+        uri: `${FREE_EXERCISE_DB}/Standing_Dumbbell_Triceps_Extension/0.jpg`,
+      },
+      tip: "Keep upper arms pointing up close to your ears.",
+      setupSteps: [
+        "Stand holding a dumbbell with both hands over your head.",
+        "Lower weight behind head by bending elbows.",
+        "Extend arms back to starting position overhead.",
+      ],
+      mistakes: ["Do not flare elbows out wide"],
     },
   ],
 
@@ -947,89 +1136,93 @@ export const EXERCISE_DATABASE: Record<string, Exercise[]> = {
   legs: [
     {
       id: "l1",
-      name: "Bodyweight Squat",
-      muscle: "legs",
-      target: "Quads, Glutes & Hamstrings",
-      sets: 3,
-      reps: "15-20",
-      mediaType: "image",
-      mediaSource: { uri: `${FREE_EXERCISE_DB}/Bodyweight_Squat/0.jpg` },
-      tip: "A perfect first step before adding weight. Learn this move well first.",
-      setupSteps: [
-        "Stand with your feet shoulder-width apart.",
-        "Push your hips back and down, like sitting in a chair.",
-        "Go down as low as feels good. Keep your chest up.",
-        "Push through your heels to stand back up.",
-      ],
-      mistakes: [
-        "Do not let your knees fall inward",
-        "Do not rise on your toes, push through your heels",
-      ],
-    },
-    {
-      id: "l2",
       name: "Barbell Squat",
       muscle: "legs",
-      target: "Quads, Glutes & Hamstrings (Loaded)",
+      target: "Quads, Glutes & Core Strength",
       sets: 3,
       reps: "8-10",
       mediaType: "image",
-      mediaSource: { uri: `${FREE_EXERCISE_DB}/Barbell_Squat/0.jpg` },
-      tip: "Use a squat rack. Start with just the bar, no weight, to learn the move.",
+      mediaSource: { uri: `${FREE_EXERCISE_DB}/Barbell_Full_Squat/0.jpg` },
+      tip: "Keep knees aligned with toes as you descend.",
       setupSteps: [
-        "Put the bar on your upper back, not on your neck.",
-        "Lift the bar off the rack. Step back. Feet shoulder-width apart.",
-        "Lower your hips down and back until your legs are level with the floor.",
-        "Push through your heels to stand back up.",
+        "Rest barbell across upper back/traps.",
+        "Stand feet shoulder-width apart.",
+        "Bend knees and hips to lower down until thighs are parallel to floor.",
+        "Push through heels to return to standing position.",
       ],
-      mistakes: [
-        "Do not let your knees go too far past your toes",
-        "Do not curve your lower back at the bottom",
-      ],
+      mistakes: ["Do not let knees cave inward", "Do not round your spine"],
     },
     {
-      id: "l3",
-      name: "Bodyweight Walking Lunge",
+      id: "l2",
+      name: "Dumbbell Lunge",
       muscle: "legs",
-      target: "Quads & Glutes (Unilateral)",
+      target: "Quads & Glutes Balance",
       sets: 3,
       reps: "10-12 each leg",
       mediaType: "image",
-      mediaSource: {
-        uri: `${FREE_EXERCISE_DB}/Bodyweight_Walking_Lunge/0.jpg`,
-      },
-      tip: "Good for balance. It also makes both legs equally strong.",
+      mediaSource: { uri: `${FREE_EXERCISE_DB}/Dumbbell_Lunge/0.jpg` },
+      tip: "Keep torso upright throughout step.",
       setupSteps: [
-        "Stand tall. Feet shoulder-width apart.",
-        "Step forward. Lower your body until your back knee almost touches the floor.",
-        "Push through your front heel to stand. Bring your back leg forward.",
-        "Keep walking forward, switching legs each time.",
+        "Stand holding dumbbells at sides.",
+        "Step forward with one leg and lower hips until front knee is at 90 degrees.",
+        "Push back to starting position.",
       ],
-      mistakes: [
-        "Do not let your front knee fall inward",
-        "Do not take too small a step",
+      mistakes: ["Do not let front knee extend past toes excessively"],
+    },
+    {
+      id: "l3",
+      name: "Leg Press",
+      muscle: "legs",
+      target: "Quads & Glutes (Guided)",
+      sets: 3,
+      reps: "10-12",
+      mediaType: "image",
+      mediaSource: {
+        uri: `${FREE_EXERCISE_DB}/Sled_45_Degrees_Leg_Press/0.jpg`,
+      },
+      tip: "Do not lock out knees hard at top.",
+      setupSteps: [
+        "Sit on machine with feet hip-width on sled.",
+        "Lower sled slowly toward chest.",
+        "Press platform up through heels.",
       ],
+      mistakes: ["Do not let lower back lift off pad"],
     },
     {
       id: "l4",
-      name: "Barbell Lunge",
+      name: "Romanian Deadlift",
       muscle: "legs",
-      target: "Quads & Glutes (Loaded)",
+      target: "Hamstrings & Glutes",
       sets: 3,
-      reps: "10 each leg",
+      reps: "10-12",
       mediaType: "image",
-      mediaSource: { uri: `${FREE_EXERCISE_DB}/Barbell_Lunge/0.jpg` },
-      tip: "Add the bar only after normal lunges feel easy and steady for you.",
+      mediaSource: {
+        uri: `${FREE_EXERCISE_DB}/Barbell_Romanian_Deadlift/0.jpg`,
+      },
+      tip: "Hinge at hips while keeping back flat.",
       setupSteps: [
-        "Put the bar on your upper back. Stand tall.",
-        "Step forward with one leg. Lower down until your back knee almost touches the floor.",
-        "Push through your front heel to stand back up.",
-        "Do all reps on one leg first, then switch to the other.",
+        "Hold barbell at hip level.",
+        "Hinge forward at hips lowering bar along shins.",
+        "Squeeze glutes to return tall.",
       ],
-      mistakes: [
-        "Do not let your front knee go past your toes",
-        "Do not step too narrow, or you may lose balance",
+      mistakes: ["Do not round lower back"],
+    },
+    {
+      id: "l5",
+      name: "Standing Calf Raise",
+      muscle: "legs",
+      target: "Calves",
+      sets: 3,
+      reps: "15-20",
+      mediaType: "image",
+      mediaSource: { uri: `${FREE_EXERCISE_DB}/Standing_Calf_Raises/0.jpg` },
+      tip: "Pause for 1 second at full extension.",
+      setupSteps: [
+        "Stand with balls of feet on step edge.",
+        "Raise heels as high as possible.",
+        "Lower heels below step level for full stretch.",
       ],
+      mistakes: ["Do not bounce rapidly at bottom"],
     },
     {
       id: "l5",
@@ -1054,23 +1247,23 @@ export const EXERCISE_DATABASE: Record<string, Exercise[]> = {
     },
     {
       id: "l6",
-      name: "Ball Leg Curl",
+      name: "Machine Leg Curl",
       muscle: "legs",
       target: "Hamstrings",
       sets: 3,
       reps: "12-15",
       mediaType: "image",
-      mediaSource: { uri: `${FREE_EXERCISE_DB}/Ball_Leg_Curl/0.jpg` },
-      tip: "A great leg exercise. You only need a stability ball, no machine.",
+      mediaSource: { uri: `${FREE_EXERCISE_DB}/Lying_Leg_Curl/0.jpg` },
+      tip: "Keep your hips pressed firmly against the bench throughout the entire movement to isolate the hamstrings.",
       setupSteps: [
-        "Lie on your back. Rest your heels on a stability ball. Legs straight.",
-        "Lift your hips off the floor.",
-        "Bend your knees to pull the ball toward you.",
-        "Straighten your legs back out. Then lower your hips.",
+        "Lie face down on the leg curl machine with the padded lever resting just below your calf muscles.",
+        "Grasp the machine's handles for stability and align your knees with the machine's pivot point.",
+        "Exhale as you curl your legs upward towards your glutes as far as comfortable without lifting your hips.",
+        "Pause briefly at the top, then slowly lower the weight back to the starting position under control.",
       ],
       mistakes: [
-        "Do not let your hips drop down during the set",
-        "Do not move too fast and lose control",
+        "Arching your lower back or lifting your hips off the pad to force the weight up",
+        "Swinging the weight or using momentum instead of controlled hamstring tension",
       ],
     },
     {
@@ -1118,14 +1311,6 @@ export const EXERCISE_DATABASE: Record<string, Exercise[]> = {
   ],
 };
 
-// This file lives under app/ so Expo Router treats it as a route and warns
-// if there's no default export, even though it's only used as a data
-// module (imported for MUSCLE_GROUPS / EXERCISE_DATABASE) and never
-// actually navigated to. This no-op default silences that warning without
-// changing any behavior. If you'd rather not have a stray "/exercises"
-// route at all, the cleaner long-term fix is moving this file outside
-// app/ (e.g. to a lib/ or data/ folder) and updating the import paths
-// that reference "@/app/exercises".
 export default function ExercisesDataModule() {
   return null;
 }

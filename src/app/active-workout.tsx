@@ -31,7 +31,7 @@ export default function ActiveWorkoutScreen() {
   const [currentSet, setCurrentSet] = useState(1);
 
   const [isResting, setIsResting] = useState(false);
-  const [restTimeLeft, setRestTimeLeft] = useState(60);
+  const [restTimeLeft, setRestTimeLeft] = useState(30);
 
   // Safe fallback if activeExercises is empty
   const currentExercise =
@@ -69,8 +69,8 @@ export default function ActiveWorkoutScreen() {
     }
   };
 
-  const startRestTimer = () => {
-    setRestTimeLeft(60);
+  const startRestTimer = (seconds: number) => {
+    setRestTimeLeft(seconds);
     setIsResting(true);
   };
 
@@ -79,12 +79,12 @@ export default function ActiveWorkoutScreen() {
 
     if (currentSet < currentExercise.sets) {
       setCurrentSet(currentSet + 1);
-      startRestTimer();
+      startRestTimer(30);
     } else {
       if (currentIndex < activeExercises.length - 1) {
         setCurrentIndex(currentIndex + 1);
         setCurrentSet(1);
-        startRestTimer();
+        startRestTimer(60);
       } else {
         await saveWorkoutLog(selectedMuscles);
         const musclesFormatted = selectedMuscles
@@ -105,7 +105,6 @@ export default function ActiveWorkoutScreen() {
     }
   };
 
-  // Guard clause to prevent rendering errors if exercise database is empty or missing key
   if (!currentExercise) {
     return (
       <SafeAreaView style={styles.container}>
