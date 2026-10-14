@@ -226,19 +226,35 @@ export default function HomeScreen() {
         {/* 4. GYM SURVIVAL TOOLKIT */}
         <Text style={styles.sectionTitle}>GYM TOOLKIT</Text>
         <View style={styles.toolkitGrid}>
-          <View style={styles.toolCard}>
+          <TouchableOpacity
+            style={styles.toolCard}
+            onPress={() =>
+              router.push({
+                pathname: "/machine-finder" as any,
+                params: { muscle: selectedMuscles[0] || "chest" },
+              })
+            }
+          >
             <Text style={styles.toolIcon}>🔍</Text>
             <Text style={styles.toolTitle}>Machine Finder</Text>
             <Text style={styles.toolSub}>
               How to recognize & adjust machines
             </Text>
-          </View>
+          </TouchableOpacity>
 
-          <View style={styles.toolCard}>
+          <TouchableOpacity
+            style={styles.toolCard}
+            onPress={() =>
+              router.push({
+                pathname: "/swap-exercise" as any,
+                params: { muscle: selectedMuscles[0] || "chest" },
+              })
+            }
+          >
             <Text style={styles.toolIcon}>🔄</Text>
             <Text style={styles.toolTitle}>Swap Exercise</Text>
             <Text style={styles.toolSub}>If machine is taken or busy</Text>
-          </View>
+          </TouchableOpacity>
         </View>
 
         {/* 5. WEEKLY CONSISTENCY TRACKER */}

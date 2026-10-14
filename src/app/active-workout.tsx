@@ -49,6 +49,14 @@ export default function ActiveWorkoutScreen() {
     return () => clearInterval(interval);
   }, [isResting, restTimeLeft]);
 
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    const formattedMins = mins < 10 ? `0${mins}` : `${mins}`;
+    const formattedSecs = secs < 10 ? `0${secs}` : `${secs}`;
+    return `${formattedMins}:${formattedSecs}`;
+  };
+
   const saveWorkoutLog = async (muscles: string[]) => {
     const {
       data: { user },
@@ -60,7 +68,7 @@ export default function ActiveWorkoutScreen() {
       {
         user_id: user.id,
         muscles_trained: muscles,
-        duration_minutes: 35,
+        duration_minutes: 30,
       },
     ]);
 
@@ -167,7 +175,7 @@ export default function ActiveWorkoutScreen() {
 
         <Text style={styles.exerciseTitle}>{currentExercise.name}</Text>
         <Text style={styles.exerciseSubtitle}>
-          Target: {currentExercise.target} • {currentExercise.sets} Sets ×{" "}
+          Target: {currentExercise.target} | {currentExercise.sets} Sets ×{" "}
           {currentExercise.reps} Reps
         </Text>
 
@@ -220,9 +228,7 @@ export default function ActiveWorkoutScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.restCard}>
             <Text style={styles.restTitle}>REST TIME</Text>
-            <Text style={styles.restTimerText}>
-              00:{restTimeLeft < 10 ? `0${restTimeLeft}` : restTimeLeft}
-            </Text>
+            <Text style={styles.restTimerText}>{formatTime(restTimeLeft)}</Text>
             <Text style={styles.restSubtitle}>
               Catch your breath & sip water
             </Text>
