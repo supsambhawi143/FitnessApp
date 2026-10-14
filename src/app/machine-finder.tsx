@@ -13,21 +13,44 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function MachineFinderScreen() {
   const params = useLocalSearchParams();
-  const muscleKey = (params.muscle as string) || "chest";
-  const exercises =
-    EXERCISE_DATABASE[muscleKey] || EXERCISE_DATABASE.chest || [];
+  const exerciseId = params.exerciseId as string;
+  const defaultMuscle = (params.muscle as string) || "chest";
 
-  const [selectedIndex, setSelectedIndex] = useState(0);
+  // Helper to locate which muscle category contains the scanned exercise ID
+  const findExerciseAndCategory = () => {
+    if (exerciseId) {
+      for (const [group, exList] of Object.entries(EXERCISE_DATABASE)) {
+        const foundIdx = exList.findIndex((ex) => ex.id === exerciseId);
+        if (foundIdx !== -1) {
+          return { category: group, index: foundIdx };
+        }
+      }
+    }
+    return { category: defaultMuscle, index: 0 };
+  };
+
+  const initialMatch = findExerciseAndCategory();
+  const [currentMuscle, setCurrentMuscle] = useState(initialMatch.category);
+  const [selectedIndex, setSelectedIndex] = useState(initialMatch.index);
+
+  const exercises =
+    EXERCISE_DATABASE[currentMuscle] || EXERCISE_DATABASE.chest || [];
   const currentExercise: Exercise = exercises[selectedIndex] || exercises[0];
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Header with Scan QR button on top right */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
           <Text style={styles.backText}>← Back</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Machine Finder</Text>
-        <View style={{ width: 50 }} />
+        <TouchableOpacity
+          style={styles.scanButton}
+          onPress={() => router.push("/machine-scanner" as any)}
+        >
+          <Text style={styles.scanButtonText}>📷 Scan</Text>
+        </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -120,6 +143,13 @@ const styles = StyleSheet.create({
   },
   backText: { color: "#94a3b8", fontSize: 14, fontWeight: "600" },
   headerTitle: { color: "#ffffff", fontSize: 16, fontWeight: "800" },
+  scanButton: {
+    backgroundColor: "#dc2626",
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+  },
+  scanButtonText: { color: "#ffffff", fontSize: 12, fontWeight: "800" },
   scrollContent: { padding: 20 },
   sectionTitle: {
     color: "#94a3b8",
